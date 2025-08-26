@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% block title %}Quiz - {{ subject.name }}{% endblock %}
+{% block content %}
+<div class="quiz-container">
+    <!-- Header -->
+    <div class="quiz-header">
+        <h1>Quiz: <span class="subject-name">{{ subject.name }}</span></h1>
+        <div class="progress-container">
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: {{ progress }}%;"
+                    aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <small class="text-muted mt-1 d-block">
+                Question {{ current_question }} of {{ total_questions }}
+            </small>
+        </div>
+    </div>
+
+    <!-- Feedback Section - Only show after submission -->
+    {% if feedback %}
+    <div class="feedback-container show">
+        <div class="feedback-card {{ feedback.type }}">
+            <i class="fas fa-{{ feedback.icon }} feedback-icon"></i>
+            <div class="feedback-content">
+                <div class="feedback-title">
+                    <i class="fas fa-{{ feedback.icon }}"></i> {{ feedback.title }}
+                </div>
+                <div class="feedback-message">{{ feedback.message }}</div>
+                {% if feedback.explanation %}
+                <div class="feedback-explanation">
+                    <h4>Explanation:</h4>
+                    <p>{{ feedback.explanation }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Question Section -->
+    <div class="question-container">
+        <div class="question-header">
+            <div class="question-number">{{ current_question }}</div>
+            <div class="attempts-counter">
+                <i class="fas fa-redo mr-1"></i>
+                Attempts: {{ attempts }}/{{ max_attempts }}
+            </div>
+        </div>
+        <div class="question-text">{{ question.text_content }}</div>
+
+        <!-- Options -->
+        <form method="post" id="quiz-form">
+            {% csrf_token %}
+            <div class="options-container">
+                {% for option in options %}
+                <div class="option
+                    {% if highlight_correct and option.id == correct_option_id %}correct-option{% endif %}
+                    {% if highlight_wrong and option.id in wrong_option_ids %}wrong-option{% endif %}
+                ">
+                    <input type="radio" id="option{{ forloop.counter }}" name="answer" value="{{ option.id }}"
+                           {% if is_answer_locked %}disabled{% endif %}>
+                    <label for="option{{ forloop.counter }}">{{ option.text_content }}</label>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Hint -->
+            {% if show_hint_option %}
+            <div class="hint-section">
+                <button type="button" class="btn-hint" id="hint-btn">
+                    <i class="fas fa-lightbulb mr-1"></i> Show Hint
+                </button>
+                <div class="hint-box" id="hint-box">
+                    <strong>Hint:</strong> {{ hint }}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Footer -->
+            <div class="quiz-footer">
+                <!-- Back Button -->
+                {% if previous_question %}
+                <a href="{% url 'question_detail' subject.id previous_question.id %}"
+                   class="btn btn-secondary btn-custom back-button"
+                   {% if is_first_question %}data-first-question="true"{% endif %}>
+                    <i class="fas fa-arrow-left mr-2"></i> Previous
+                </a>
+                {% endif %}
+
+                <!-- Submit Answer Button -->
+                <button type="submit"
+                        class="btn btn-primary-custom btn-custom"
+                        {% if is_answer_locked %}disabled{% endif %}>
+                    <i class="fas fa-paper-plane mr-2"></i> Submit Answer
+                </button>
+
+                <!-- Next/Finish Button -->
+                {% if show_next %}
+                    {% if next_question %}
+                    <a href="{% url 'question_detail' subject.id next_question.id %}"
+                       class="btn btn-success btn-custom">
+                        <i class="fas fa-arrow-right mr-2"></i> Next Question
+                    </a>
+                    {% else %}
+                    <a href="{% url 'results' subject.id %}" class="btn btn-success btn-custom">
+                        <i class="fas fa-flag-checkered mr-2"></i> Finish Quiz
+                    </a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- First Question Warning -->
+    <div class="first-question-warning" id="first-question-warning" style="display: none;">
+        <i class="fas fa-exclamation-triangle"></i>
+        Note: This is the first question. If you go back, you need to start again.
+    </div>
+</div>
+
+<!-- JS -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const options = document.querySelectorAll('.option');
+    options.forEach(option => {
+        option.addEventListener('click', function () {
+            const radio = this.querySelector('input[type="radio"]');
+            if (!radio.disabled) {
+                radio.checked = true;
+                // Visual feedback
+                options.forEach(opt => opt.style.borderColor = 'transparent');
+                this.style.borderColor = 'var(--primary-color)';
+            }
+        });
+    });
+
+    // Hint toggle
+    const hintBtn = document.getElementById('hint-btn');
+    const hintBox = document.getElementById('hint-box');
+    if (hintBtn && hintBox) {
+        hintBtn.addEventListener('click', function () {
+            hintBox.classList.toggle('show');
+            this.innerHTML = hintBox.classList.contains('show')
+                ? '<i class="fas fa-lightbulb-slash mr-1"></i> Hide Hint'
+                : '<i class="fas fa-lightbulb mr-1"></i> Show Hint';
+        });
+    }
+
+    // Back button warning
+    const backButton = document.querySelector('.back-button[data-first-question="true"]');
+    if (backButton) {
+        backButton.addEventListener('click', function (e) {
+            e.preventDefault();
+            const warning = document.getElementById('first-question-warning');
+            warning.style.display = 'block';
+            setTimeout(() => warning.style.display = 'none', 5000);
+        });
+    }
+});
+</script>
+
+<!-- Styles -->
+<style>
+    .option {
+        border: 2px solid transparent;
+        padding: 12px 15px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .option:hover:not(.correct-option):not(.wrong-option) {
+        background-color: #f8f9fa;
+    }
+    .option.correct-option {
+        border: 2px solid #28a745;
+        background-color: #d4edda;
+        font-weight: bold;
+    }
+    .option.wrong-option {
+        border: 2px solid #dc3545;
+        background-color: #f8d7da;
+    }
+    .hint-section { margin: 20px 0; text-align: center; }
+    .hint-box {
+        display: none;
+        margin-top: 15px;
+        padding: 15px;
+        background-color: #fff3cd;
+        border-left: 4px solid #ffc107;
+        border-radius: 4px;
+    }
+    .hint-box.show { display: block; }
+    .btn-hint {
+        background-color: #17a2b8;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .first-question-warning {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #f8d7da;
+        color: #721c24;
+        border-radius: 8px;
+        text-align: center;
+    }
+    .feedback-card { margin-bottom: 20px; }
+</style>
+{% endblock %}

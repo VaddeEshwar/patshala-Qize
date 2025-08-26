@@ -1,0 +1,81 @@
+.subject-card {
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.subject-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.option-block {
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    transition: all 0.3s;
+}
+
+.option-block:hover {
+    background-color: #f8f9fa;
+}
+
+.correct-option {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.incorrect-option {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+.option.selected-option {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+.option.correct-option {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+.option.selected-option.correct-option {
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
+}
+
+.explanation {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    border-left: 4px solid #007bff;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+.breadcrumb {
+    background-color: transparent;
+    padding: 0;
+    margin-bottom: 1rem;
+}
+
+.card {
+    margin-bottom: 1.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+}
+
+.card-header {
+    font-weight: 600;
+}
+
+.btn {
+    border-radius: 4px;
+}
+
+.progress {
+    height: 10px;
+}
