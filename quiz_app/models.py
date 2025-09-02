@@ -1,3 +1,4 @@
+#models.py
 from django.db import models
 from django.core.exceptions import ValidationError
 from PIL import Image
@@ -101,3 +102,20 @@ class UserProgress(models.Model):
         username = self.user.username if self.user else "Anonymous"
         return f"Progress for {username} on Question {self.question.id}"
 
+class Submission(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    selected_option = models.ForeignKey(Option, on_delete=models.SET_NULL, null=True, blank=True)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Submission by {self.user} on {self.question}"
+
+
+class Answer(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    option = models.ForeignKey(Option, on_delete=models.CASCADE)
+    is_correct = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Answer for Question {self.question.id}"

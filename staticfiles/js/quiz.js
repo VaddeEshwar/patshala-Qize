@@ -1,3 +1,4 @@
+//quiz.js
 document.addEventListener('DOMContentLoaded', function() {
     // Add visual feedback when selecting options
     const options = document.querySelectorAll('.option-block');
