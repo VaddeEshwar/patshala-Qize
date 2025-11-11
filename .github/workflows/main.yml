@@ -25,13 +25,9 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Migrations
-        env:
-          DJANGO_SETTINGS_MODULE: quiz_project.settings
         run: |
-          python manage.py migrate
+          python manage.py migrate --settings=quiz_project.test_settings
 
       - name: Run Tests
-        env:
-          DJANGO_SETTINGS_MODULE: quiz_project.settings
         run: |
-          python manage.py test
+          python manage.py test --settings=quiz_project.test_settings
